@@ -9,9 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RecommendationsRouteImport } from './routes/recommendations'
 import { Route as PatientFlowRouteImport } from './routes/patient-flow'
 import { Route as IndexRouteImport } from './routes/index'
 
+const RecommendationsRoute = RecommendationsRouteImport.update({
+  id: '/recommendations',
+  path: '/recommendations',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PatientFlowRoute = PatientFlowRouteImport.update({
   id: '/patient-flow',
   path: '/patient-flow',
@@ -26,31 +32,42 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/patient-flow': typeof PatientFlowRoute
+  '/recommendations': typeof RecommendationsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/patient-flow': typeof PatientFlowRoute
+  '/recommendations': typeof RecommendationsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/patient-flow': typeof PatientFlowRoute
+  '/recommendations': typeof RecommendationsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/patient-flow'
+  fullPaths: '/' | '/patient-flow' | '/recommendations'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/patient-flow'
-  id: '__root__' | '/' | '/patient-flow'
+  to: '/' | '/patient-flow' | '/recommendations'
+  id: '__root__' | '/' | '/patient-flow' | '/recommendations'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   PatientFlowRoute: typeof PatientFlowRoute
+  RecommendationsRoute: typeof RecommendationsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/recommendations': {
+      id: '/recommendations'
+      path: '/recommendations'
+      fullPath: '/recommendations'
+      preLoaderRoute: typeof RecommendationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/patient-flow': {
       id: '/patient-flow'
       path: '/patient-flow'
@@ -71,6 +88,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   PatientFlowRoute: PatientFlowRoute,
+  RecommendationsRoute: RecommendationsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
