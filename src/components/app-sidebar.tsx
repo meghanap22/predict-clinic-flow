@@ -21,10 +21,10 @@ import {
 
 const items = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "Analytics & Outcomes", url: "/analytics", icon: LineChart },
   { title: "Patient Flow", url: "/patient-flow", icon: Activity },
   { title: "AI Recommendations", url: "/recommendations", icon: Sparkles },
   { title: "What-If Simulation", url: "/simulation", icon: SlidersHorizontal },
-  { title: "Analytics & Outcomes", url: "/analytics", icon: LineChart },
 ];
 
 export function AppSidebar() {
