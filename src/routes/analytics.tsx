@@ -64,7 +64,7 @@ function AnalyticsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Analytics & Outcomes</h1>
-        <p className="text-sm text-muted-foreground">Before vs After AI-driven optimization</p>
+        <p className="text-sm text-muted-foreground">Before vs. After AI-driven Optimization</p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
@@ -80,7 +80,7 @@ function AnalyticsPage() {
         <Card className="shadow-elegant">
           <CardHeader>
             <CardTitle>Average Wait Time</CardTitle>
-            <CardDescription>Current operations vs AI-optimized (minutes)</CardDescription>
+            <CardDescription>Current Operations vs AI-Optimized (minutes)</CardDescription>
           </CardHeader>
           <CardContent className="h-72">
             <ResponsiveContainer width="100%" height="100%">
@@ -100,7 +100,7 @@ function AnalyticsPage() {
         <Card className="shadow-elegant">
           <CardHeader>
             <CardTitle>Patients Seen per Hour</CardTitle>
-            <CardDescription>Hourly throughput comparison</CardDescription>
+            <CardDescription>Hourly throughput Comparison</CardDescription>
           </CardHeader>
           <CardContent className="h-72">
             <ResponsiveContainer width="100%" height="100%">
@@ -122,7 +122,7 @@ function AnalyticsPage() {
         <Card className="shadow-elegant lg:col-span-2">
           <CardHeader>
             <CardTitle>Operational Profile</CardTitle>
-            <CardDescription>Multi-dimensional outcome comparison</CardDescription>
+            <CardDescription>Multi-Dimensional Outcome Comparison</CardDescription>
           </CardHeader>
           <CardContent className="h-80">
             <ResponsiveContainer width="100%" height="100%">
@@ -142,15 +142,15 @@ function AnalyticsPage() {
         <Card className="shadow-elegant">
           <CardHeader>
             <CardTitle>Outcome Summary</CardTitle>
-            <CardDescription>7-day rolling comparison</CardDescription>
+            <CardDescription>7-Day Rolling Comparison</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {[
-              { k: "Avg wait reduction", v: "−13.2 min", d: "across all departments" },
-              { k: "Extra patients served", v: "+96 / day", d: "throughput gain" },
-              { k: "Staff overtime", v: "−28%", d: "via smarter scheduling" },
-              { k: "Peak congestion events", v: "−61%", d: "predicted & pre-empted" },
-              { k: "Patient satisfaction", v: "+0.7 NPS", d: "weekly survey" },
+              { k: "Avg Wait Reduction", v: "−13.2 min", d: "Across all Departments" },
+              { k: "Extra Patients Served", v: "+96 / day", d: "Throughput Gain" },
+              { k: "Staff Overtime", v: "−28%", d: "Via Smarter Scheduling" },
+              { k: "Peak Congestion Events", v: "−61%", d: "Predicted & Pre-empted" },
+              { k: "Patient Satisfaction", v: "+0.7 NPS", d: "Weekly Survey" },
             ].map((o, i) => (
               <div key={o.k} className="flex items-center justify-between rounded-xl border bg-card p-3 animate-fade-in-up" style={{ animationDelay: `${i * 60}ms` }}>
                 <div>

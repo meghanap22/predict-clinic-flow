@@ -51,8 +51,8 @@ function DashboardPage() {
     () => [
       {
         level: "high" as const,
-        title: "High congestion predicted in Pediatrics within 25 minutes",
-        detail: "Arrival rate +32% vs baseline. Recommend opening overflow intake.",
+        title: "High Congestion Predicted in Pediatrics within 25 minutes",
+        detail: "Arrival Rate +32% vs. baseline. Recommend opening overflow intake.",
       },
       {
         level: state.avgWaitTime > 30 ? ("high" as const) : ("medium" as const),
@@ -74,11 +74,11 @@ function DashboardPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Operations Overview</h1>
           <p className="text-sm text-muted-foreground">
-            Real-time signals across departments • Updated every 4s
+            Real-Time Signals across Departments • Updated every 4s
           </p>
         </div>
         <Badge className="bg-gradient-primary text-primary-foreground shadow-glow">
-          <Activity className="mr-1 h-3 w-3" /> Simulation active
+          <Activity className="mr-1 h-3 w-3" /> Simulation Active
         </Badge>
       </div>
 
@@ -98,8 +98,8 @@ function DashboardPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>Wait Time & Congestion (live)</CardTitle>
-                <CardDescription>Streaming operational signal — last 30 minutes</CardDescription>
+                <CardTitle>Wait Time & Congestion (Live)</CardTitle>
+                <CardDescription>Streaming Operational Signal — Last 30 minutes</CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -137,7 +137,7 @@ function DashboardPage() {
         <Card className="shadow-elegant">
           <CardHeader>
             <CardTitle>Predicted Congestion</CardTitle>
-            <CardDescription>Next 30 minutes • clinic-wide</CardDescription>
+            <CardDescription>Next 30 minutes • Clinic-Wide</CardDescription>
           </CardHeader>
           <CardContent className="h-72">
             <ResponsiveContainer width="100%" height="100%">
@@ -161,7 +161,7 @@ function DashboardPage() {
         <Card className="lg:col-span-2 shadow-elegant">
           <CardHeader>
             <CardTitle>Department Load</CardTitle>
-            <CardDescription>Capacity pressure by department</CardDescription>
+            <CardDescription>Capacity Pressure by Department</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {DEPARTMENTS.map((d) => (
@@ -181,7 +181,7 @@ function DashboardPage() {
             <CardTitle className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-warning" /> AI Alerts
             </CardTitle>
-            <CardDescription>Bottleneck signals</CardDescription>
+            <CardDescription>Bottleneck Signals</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {alerts.map((a, i) => (

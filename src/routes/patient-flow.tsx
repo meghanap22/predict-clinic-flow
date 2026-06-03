@@ -71,14 +71,14 @@ function FlowPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Patient Flow Visualization</h1>
         <p className="text-sm text-muted-foreground">
-          {totalInClinic} patients currently in clinic • Live operational state
+          {totalInClinic} Patients Currently in Clinic • Live Operational State
         </p>
       </div>
 
       <Card className="shadow-elegant overflow-hidden">
         <CardHeader>
           <CardTitle>Flow Pipeline</CardTitle>
-          <CardDescription>Patients moving through stages — width reflects volume</CardDescription>
+          <CardDescription>Patients Moving through Stages — Width Reflects Volume</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col gap-3 md:flex-row md:items-stretch">
@@ -159,7 +159,7 @@ function FlowPage() {
         <Card className="shadow-elegant">
           <CardHeader>
             <CardTitle>Doctor Schedule</CardTitle>
-            <CardDescription>Today's session load</CardDescription>
+            <CardDescription>Today's Session Load</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             {[
@@ -191,8 +191,8 @@ function FlowPage() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card className="shadow-elegant">
           <CardHeader>
-            <CardTitle>Queue Build-up</CardTitle>
-            <CardDescription>Delays compounding through the day</CardDescription>
+            <CardTitle>Queue Build-Up</CardTitle>
+            <CardDescription>Delays Compounding through the Day</CardDescription>
           </CardHeader>
           <CardContent className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -210,7 +210,7 @@ function FlowPage() {
         <Card className="shadow-elegant">
           <CardHeader>
             <CardTitle>Congestion Heatmap</CardTitle>
-            <CardDescription>Department × hour intensity</CardDescription>
+            <CardDescription>Department × Hour Intensity</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-1">
@@ -245,7 +245,7 @@ function FlowPage() {
       <Card className="shadow-elegant">
         <CardHeader>
           <CardTitle>Intake Bottlenecks</CardTitle>
-          <CardDescription>Stages exceeding target dwell time</CardDescription>
+          <CardDescription>Stages Exceeding Target Dwell Time</CardDescription>
         </CardHeader>
         <CardContent className="h-64">
           <ResponsiveContainer width="100%" height="100%">

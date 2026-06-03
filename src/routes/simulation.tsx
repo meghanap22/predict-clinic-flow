@@ -72,7 +72,7 @@ function SimPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">What-If Simulation</h1>
           <p className="text-sm text-muted-foreground">
-            Adjust operations and watch the AI re-forecast in real time
+            Adjust Operations and Watch the AI Re-forecast in Real Time
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -89,19 +89,19 @@ function SimPage() {
         <Card className="shadow-elegant">
           <CardHeader>
             <CardTitle>Operational Controls</CardTitle>
-            <CardDescription>Drag sliders to test scenarios</CardDescription>
+            <CardDescription>Drag Sliders to Test Scenarios</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <ControlSlider label="Patient arrivals" unit="/ hour" value={arrivals} min={5} max={45} onChange={setArrivals} />
-            <ControlSlider label="Doctors on shift" value={doctors} min={2} max={14} onChange={setDoctors} />
-            <ControlSlider label="Open exam rooms" value={rooms} min={4} max={18} onChange={setRooms} />
-            <ControlSlider label="Avg appointment" unit="min" value={apptDuration} min={10} max={45} onChange={setApptDuration} />
-            <ControlSlider label="Nurses on shift" value={nurses} min={3} max={16} onChange={setNurses} />
+            <ControlSlider label="Patient Arrivals" unit="/ hour" value={arrivals} min={5} max={45} onChange={setArrivals} />
+            <ControlSlider label="Doctors on Shift" value={doctors} min={2} max={14} onChange={setDoctors} />
+            <ControlSlider label="Open Exam Rooms" value={rooms} min={4} max={18} onChange={setRooms} />
+            <ControlSlider label="Avg Appointment" unit="min" value={apptDuration} min={10} max={45} onChange={setApptDuration} />
+            <ControlSlider label="Nurses on Shift" value={nurses} min={3} max={16} onChange={setNurses} />
 
             <div className="flex items-center justify-between rounded-xl border bg-card p-3">
               <div className="space-y-0.5">
-                <Label className="text-sm">Open overflow station</Label>
-                <p className="text-xs text-muted-foreground">+1 doctor, +2 rooms</p>
+                <Label className="text-sm">Open Overflow Station</Label>
+                <p className="text-xs text-muted-foreground">+1 Doctor, +2 Rooms</p>
               </div>
               <Switch checked={overflow} onCheckedChange={setOverflow} />
             </div>
@@ -118,8 +118,8 @@ function SimPage() {
 
           <Card className="shadow-elegant">
             <CardHeader>
-              <CardTitle>Forecast: Baseline vs Your Scenario</CardTitle>
-              <CardDescription>Predicted average wait time over next 60 minutes</CardDescription>
+              <CardTitle>Forecast: Baseline vs. Your Scenario</CardTitle>
+              <CardDescription>Predicted Average Wait Time over Next 60 Minutes</CardDescription>
             </CardHeader>
             <CardContent className="h-72">
               <ResponsiveContainer width="100%" height="100%">
