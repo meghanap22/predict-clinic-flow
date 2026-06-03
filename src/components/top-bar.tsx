@@ -3,6 +3,7 @@ import { Moon, Sun, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
+import { GlobalSearch } from "@/components/global-search";
 
 export function TopBar() {
   const [dark, setDark] = useState(false);
@@ -18,7 +19,10 @@ export function TopBar() {
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-success opacity-75" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-success" />
         </span>
-        <span className="text-xs font-medium text-muted-foreground">Live simulation</span>
+        <span className="text-xs font-medium text-muted-foreground">Live Simulation</span>
+      </div>
+      <div className="min-w-0 flex-1 px-2 md:max-w-md lg:max-w-lg">
+        <GlobalSearch />
       </div>
       <div className="ml-auto flex items-center gap-2">
         <Badge variant="outline" className="hidden gap-1 border-teal/40 bg-teal/10 text-teal-foreground md:inline-flex">
