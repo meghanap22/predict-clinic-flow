@@ -117,14 +117,14 @@ function FlowPage() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <Card className="shadow-elegant lg:col-span-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:items-stretch">
+        <Card className="flex h-full flex-col shadow-elegant lg:col-span-2">
           <CardHeader>
             <CardTitle>Exam Room Map</CardTitle>
             <CardDescription>Occupied / Cleaning / Available</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
+          <CardContent className="flex flex-1 flex-col gap-3">
+            <div className="grid min-h-0 flex-1 auto-rows-fr grid-cols-3 gap-3 sm:grid-cols-4 sm:grid-rows-3">
               {ROOMS.map((r) => {
                 const isOcc = r.status === "occupied";
                 const isClean = r.status === "cleaning";
@@ -135,20 +135,24 @@ function FlowPage() {
                   : "border-success/40 bg-success/10";
                 const Icon = isOcc ? DoorClosed : DoorOpen;
                 return (
-                  <div key={r.id} className={`rounded-2xl border p-3 ${color} transition hover:scale-[1.02]`}>
+                  <div
+                    key={r.id}
+                    className={`flex h-full min-h-0 flex-col justify-between rounded-2xl border p-4 transition hover:scale-[1.02] ${color}`}
+                  >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-medium text-muted-foreground">Room</span>
-                      <Icon className="h-4 w-4 text-muted-foreground" />
+                      <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
                     </div>
-                    <div className="mt-1 text-xl font-semibold tabular-nums">{r.id.toString().padStart(2, "0")}</div>
-                    <div className="mt-1 text-[10px] uppercase tracking-wider">
-                      {r.status}{isOcc ? ` • ${r.mins}m` : ""}
+                    <div className="text-2xl font-semibold tabular-nums">{r.id.toString().padStart(2, "0")}</div>
+                    <div className="text-[11px] uppercase tracking-wider leading-tight">
+                      {r.status}
+                      {isOcc ? ` • ${r.mins}m` : ""}
                     </div>
                   </div>
                 );
               })}
             </div>
-            <div className="mt-4 flex flex-wrap gap-3 text-xs text-muted-foreground">
+            <div className="flex shrink-0 flex-wrap gap-3 text-xs text-muted-foreground">
               <Legend color="bg-primary" label="Occupied" />
               <Legend color="bg-warning" label="Cleaning" />
               <Legend color="bg-success" label="Available" />
@@ -156,7 +160,7 @@ function FlowPage() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-elegant">
+        <Card className="flex h-full flex-col shadow-elegant">
           <CardHeader>
             <CardTitle>Doctor Schedule</CardTitle>
             <CardDescription>Today's Session Load</CardDescription>
