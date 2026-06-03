@@ -29,8 +29,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { KpiCard } from "@/components/kpi-card";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { DEPARTMENTS } from "@/lib/simulation";
 import { useClinic } from "@/lib/clinic-context";
 import { fetchDashboardSummary } from "@/lib/ai/functions";
@@ -46,14 +48,49 @@ export const Route = createFileRoute("/")({
   component: DashboardPage,
 });
 
+const CONGESTION_TIERS = [
+  {
+    id: "critical",
+    range: "> 70%",
+    label: "Critical — act now",
+    meaning: "Review staffing and intake capacity immediately.",
+    color: "text-destructive",
+    fill: "var(--color-destructive)",
+    isActive: (risk: number) => risk > 70,
+  },
+  {
+    id: "elevated",
+    range: "46–70%",
+    label: "Elevated — monitor",
+    meaning: "Watch department loads and wait times closely.",
+    color: "text-warning",
+    fill: "var(--color-warning)",
+    isActive: (risk: number) => risk > 45 && risk <= 70,
+  },
+  {
+    id: "stable",
+    range: "≤ 45%",
+    label: "Stable",
+    meaning: "Clinic-wide flow is within normal thresholds.",
+    color: "text-success",
+    fill: "var(--color-success)",
+    isActive: (risk: number) => risk <= 45,
+  },
+] as const;
+
 function DashboardPage() {
   const { state, history, snapshot } = useClinic();
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [summary, setSummary] = useState<AiSummaryResponse | null>(null);
 
-  const congestionData = useMemo(
-    () => [{ name: "Risk", value: state.congestionRisk, fill: "var(--color-primary)" }],
+  const congestionTier = useMemo(
+    () => CONGESTION_TIERS.find((t) => t.isActive(state.congestionRisk)) ?? CONGESTION_TIERS[2],
     [state.congestionRisk],
+  );
+
+  const congestionData = useMemo(
+    () => [{ name: "Risk", value: state.congestionRisk, fill: congestionTier.fill }],
+    [state.congestionRisk, congestionTier.fill],
   );
 
   const thresholdAlerts = useMemo(() => {
@@ -61,27 +98,27 @@ function DashboardPage() {
     if (state.congestionRisk > 70) {
       alerts.push({
         level: "high",
-        title: "Congestion risk elevated",
+        title: "Congestion Risk Elevated",
         detail: `Risk score at ${state.congestionRisk}% — review staffing and intake capacity.`,
       });
     } else if (state.congestionRisk > 45) {
       alerts.push({
         level: "medium",
-        title: "Congestion risk rising",
+        title: "Congestion Risk Rising",
         detail: `Risk score at ${state.congestionRisk}% — monitor department loads closely.`,
       });
     }
     if (state.avgWaitTime > 30) {
       alerts.push({
         level: state.avgWaitTime > 40 ? "high" : "medium",
-        title: "Wait times above target",
+        title: "Wait Times Above Target",
         detail: `Average wait is ${state.avgWaitTime} min (target: ≤25 min).`,
       });
     }
     if (state.roomUtilization > 85) {
       alerts.push({
         level: "high",
-        title: "Room utilization critical",
+        title: "Room Utilization Critical",
         detail: `Exam rooms at ${state.roomUtilization}% capacity — consider overflow or reallocation.`,
       });
     }
@@ -125,8 +162,8 @@ function DashboardPage() {
         <KpiCard label="Estimated Delay" value={state.estimatedDelay} unit="min" icon={<TimerReset className="h-5 w-5" />} accent={state.estimatedDelay > 20 ? "warning" : "success"} />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2 shadow-elegant">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Card className="shadow-elegant">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
@@ -172,18 +209,63 @@ function DashboardPage() {
             <CardDescription>Next 30 minutes • Clinic-Wide</CardDescription>
           </CardHeader>
           <CardContent className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadialBarChart innerRadius="65%" outerRadius="100%" data={congestionData} startAngle={220} endAngle={-40}>
-                <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-                <RadialBar background dataKey="value" cornerRadius={20} />
-              </RadialBarChart>
-            </ResponsiveContainer>
-            <div className="-mt-44 flex flex-col items-center text-center">
-              <div className="text-4xl font-semibold tabular-nums">{state.congestionRisk}%</div>
-              <div className="text-xs uppercase tracking-wider text-muted-foreground">Risk score</div>
-            </div>
-            <div className="mt-36 text-center text-sm text-muted-foreground">
-              {state.congestionRisk > 70 ? "Critical — act now" : state.congestionRisk > 45 ? "Elevated — monitor" : "Stable"}
+            <div className="flex h-full gap-3">
+              <div className="relative min-h-0 min-w-0 flex-1">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadialBarChart innerRadius="65%" outerRadius="100%" data={congestionData} startAngle={220} endAngle={-40}>
+                    <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                    <RadialBar background dataKey="value" cornerRadius={20} />
+                  </RadialBarChart>
+                </ResponsiveContainer>
+                <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-2 pb-6 text-center">
+                  <div className="text-3xl font-semibold tabular-nums">{state.congestionRisk}%</div>
+                  <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Risk score</div>
+                </div>
+                <p
+                  className={cn(
+                    "pointer-events-none absolute inset-x-0 bottom-[14%] text-center text-sm font-semibold",
+                    congestionTier.color,
+                  )}
+                >
+                  {congestionTier.label}
+                </p>
+              </div>
+              <div className="flex w-[48%] shrink-0 flex-col justify-center border-l pl-3">
+                <p className="mb-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                  Risk cutoffs
+                </p>
+                <Table>
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="h-7 px-1 text-[10px]">Range</TableHead>
+                      <TableHead className="h-7 px-1 text-[10px]">Status</TableHead>
+                      <TableHead className="h-7 px-1 text-[10px]">Meaning</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {CONGESTION_TIERS.map((tier) => {
+                      const active = tier.isActive(state.congestionRisk);
+                      return (
+                        <TableRow
+                          key={tier.id}
+                          className={cn(
+                            "hover:bg-transparent",
+                            active && "bg-muted/60",
+                          )}
+                        >
+                          <TableCell className="px-1 py-1.5 text-[10px] tabular-nums">{tier.range}</TableCell>
+                          <TableCell className={cn("px-1 py-1.5 text-[10px] font-semibold", tier.color)}>
+                            {tier.label}
+                          </TableCell>
+                          <TableCell className="px-1 py-1.5 text-[10px] leading-snug text-muted-foreground">
+                            {tier.meaning}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -214,7 +296,7 @@ function DashboardPage() {
               <CardTitle className="flex items-center gap-2">
                 <AlertTriangle className="h-4 w-4 text-warning" /> Threshold Alerts
               </CardTitle>
-              <CardDescription>Rule-based signals from live metrics</CardDescription>
+              <CardDescription>Rule-Based Signals from Live Metrics</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
               {thresholdAlerts.length === 0 ? (
@@ -246,15 +328,17 @@ function DashboardPage() {
           </Card>
 
           <Card className="shadow-elegant">
-            <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
+            <CardHeader
+              className={`flex flex-row items-start justify-between gap-3 space-y-0 ${summary ? "pb-3" : ""}`}
+            >
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Sparkles className="h-4 w-4 text-primary" /> AI Briefing
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="mt-1.5">
                   {summary
-                    ? `Focus: ${summary.focusArea} • ${new Date(summary.generatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
-                    : "One-paragraph summary of what matters right now"}
+                    ? `Updated ${new Date(summary.generatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+                    : "One-Paragraph Summary of What Matters Right Now"}
                 </CardDescription>
               </div>
               <Button size="sm" variant="outline" onClick={generateSummary} disabled={summaryLoading}>
@@ -266,9 +350,15 @@ function DashboardPage() {
                 {summaryLoading ? "Generating…" : summary ? "Refresh" : "Generate"}
               </Button>
             </CardHeader>
-            <CardContent>
+            <CardContent className={summary ? "space-y-2" : undefined}>
               {summary ? (
-                <p className="text-sm leading-relaxed text-foreground/90">{summary.summary}</p>
+                <>
+                  <p className="text-sm">
+                    <span className="text-muted-foreground">Main Focus: </span>
+                    <span className="font-medium text-foreground">{summary.focusArea}</span>
+                  </p>
+                  <p className="text-sm leading-relaxed text-foreground/90">{summary.summary}</p>
+                </>
               ) : (
                 <p className="text-sm text-muted-foreground">
                   Click generate for an AI-written ops brief based on current wait ({state.avgWaitTime} min),

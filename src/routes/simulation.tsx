@@ -110,11 +110,13 @@ function SimPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">What-If Simulation</h1>
           <p className="text-sm text-muted-foreground">
-            Adjust controls and see the forecast update — then ask AI to explain your scenario
+            Adjust Controls and See the Forecast Update — then Ask AI to Explain your Scenario
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="outline">Scenario forecast</Badge>
+          <Badge variant="outline" className="h-8 px-3 text-xs font-medium shadow-sm">
+            Scenario Forecast
+          </Badge>
           <Button variant="outline" size="sm" onClick={reset}>
             <RotateCcw className="mr-1 h-3.5 w-3.5" /> Reset
           </Button>
@@ -271,9 +273,11 @@ function SimPage() {
             <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
               <div>
                 <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-primary" /> AI explanation
+                  <Sparkles className="h-4 w-4 text-primary" /> AI Explanation
                 </CardTitle>
-                <CardDescription>Plain-language summary of your scenario vs. baseline</CardDescription>
+                <CardDescription className="mt-1.5">
+                  Plain-Language Summary of your Scenario vs. Baseline
+                </CardDescription>
               </div>
               <Button size="sm" variant="outline" onClick={explain} disabled={explaining}>
                 {explaining ? (
@@ -289,8 +293,8 @@ function SimPage() {
                 <p className="text-sm leading-relaxed text-foreground/90">{explanation.explanation}</p>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  Adjust the controls above, then click <b>Explain forecast</b> to get an AI-written comparison
-                  of baseline ({baseline.avgWaitTime} min wait) vs. your scenario ({current.avgWaitTime} min wait).
+                  Adjust the Controls Above, then Click <b>Explain forecast</b> to get an AI-written Comparison
+                  of Baseline ({baseline.avgWaitTime} min wait) vs. your Scenario ({current.avgWaitTime} Min Wait).
                 </p>
               )}
             </CardContent>

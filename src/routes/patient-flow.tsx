@@ -121,7 +121,7 @@ function FlowPage() {
         <Card className="shadow-elegant lg:col-span-2">
           <CardHeader>
             <CardTitle>Exam Room Map</CardTitle>
-            <CardDescription>Occupied / cleaning / available</CardDescription>
+            <CardDescription>Occupied / Cleaning / Available</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6">
