@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { Moon, Sun, Sparkles } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Badge } from "@/components/ui/badge";
 import { GlobalSearch } from "@/components/global-search";
 
 export function TopBar() {
@@ -25,9 +24,6 @@ export function TopBar() {
         <GlobalSearch />
       </div>
       <div className="ml-auto flex items-center gap-2">
-        <Badge variant="outline" className="hidden gap-1 border-teal/40 bg-teal/10 text-teal-foreground md:inline-flex">
-          <Sparkles className="h-3 w-3" /> AI Online
-        </Badge>
         <Button variant="ghost" size="icon" aria-label="Toggle theme" onClick={() => setDark((d) => !d)}>
           {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </Button>

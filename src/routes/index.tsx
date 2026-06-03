@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import {
   Activity,
   Clock,
@@ -10,6 +11,8 @@ import {
   ListChecks,
   TimerReset,
   TrendingUp,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 import {
   Area,
@@ -27,7 +30,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { KpiCard } from "@/components/kpi-card";
-import { DEFAULT_CONTROLS, DEPARTMENTS, useLiveSim } from "@/lib/simulation";
+import { Button } from "@/components/ui/button";
+import { DEPARTMENTS } from "@/lib/simulation";
+import { useClinic } from "@/lib/clinic-context";
+import { fetchDashboardSummary } from "@/lib/ai/functions";
+import type { AiSummaryResponse } from "@/lib/clinic-types";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -40,33 +47,58 @@ export const Route = createFileRoute("/")({
 });
 
 function DashboardPage() {
-  const { state, history } = useLiveSim(DEFAULT_CONTROLS);
+  const { state, history, snapshot } = useClinic();
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summary, setSummary] = useState<AiSummaryResponse | null>(null);
 
   const congestionData = useMemo(
     () => [{ name: "Risk", value: state.congestionRisk, fill: "var(--color-primary)" }],
     [state.congestionRisk],
   );
 
-  const alerts = useMemo(
-    () => [
-      {
-        level: "high" as const,
-        title: "High Congestion Predicted in Pediatrics within 25 minutes",
-        detail: "Arrival Rate +32% vs. baseline. Recommend opening overflow intake.",
-      },
-      {
-        level: state.avgWaitTime > 30 ? ("high" as const) : ("medium" as const),
-        title: `Wait times expected to exceed ${state.avgWaitTime + 15} min between 2–3 PM`,
-        detail: "Cardiology bookings cluster at 14:30. Stagger by 10 minutes.",
-      },
-      {
-        level: "medium" as const,
-        title: "Room capacity approaching critical threshold",
-        detail: `Utilization at ${state.roomUtilization}%. Consider reassigning Room 4.`,
-      },
-    ],
-    [state.avgWaitTime, state.roomUtilization],
-  );
+  const thresholdAlerts = useMemo(() => {
+    const alerts: Array<{ level: "high" | "medium"; title: string; detail: string }> = [];
+    if (state.congestionRisk > 70) {
+      alerts.push({
+        level: "high",
+        title: "Congestion risk elevated",
+        detail: `Risk score at ${state.congestionRisk}% — review staffing and intake capacity.`,
+      });
+    } else if (state.congestionRisk > 45) {
+      alerts.push({
+        level: "medium",
+        title: "Congestion risk rising",
+        detail: `Risk score at ${state.congestionRisk}% — monitor department loads closely.`,
+      });
+    }
+    if (state.avgWaitTime > 30) {
+      alerts.push({
+        level: state.avgWaitTime > 40 ? "high" : "medium",
+        title: "Wait times above target",
+        detail: `Average wait is ${state.avgWaitTime} min (target: ≤25 min).`,
+      });
+    }
+    if (state.roomUtilization > 85) {
+      alerts.push({
+        level: "high",
+        title: "Room utilization critical",
+        detail: `Exam rooms at ${state.roomUtilization}% capacity — consider overflow or reallocation.`,
+      });
+    }
+    return alerts.slice(0, 2);
+  }, [state.congestionRisk, state.avgWaitTime, state.roomUtilization]);
+
+  const generateSummary = async () => {
+    setSummaryLoading(true);
+    try {
+      const response = await fetchDashboardSummary({ data: snapshot });
+      setSummary(response);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not generate briefing.");
+    } finally {
+      setSummaryLoading(false);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -176,37 +208,76 @@ function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-elegant">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-warning" /> AI Alerts
-            </CardTitle>
-            <CardDescription>Bottleneck Signals</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {alerts.map((a, i) => (
-              <div
-                key={i}
-                className="animate-fade-in-up rounded-xl border bg-card/50 p-3"
-                style={{ animationDelay: `${i * 80}ms` }}
-              >
-                <div className="flex items-center gap-2">
-                  <span
-                    className={
-                      "h-2 w-2 rounded-full " +
-                      (a.level === "high" ? "bg-destructive animate-pulse-ring" : "bg-warning")
-                    }
-                  />
-                  <Badge variant="outline" className="text-[10px] uppercase">
-                    {a.level}
-                  </Badge>
-                </div>
-                <div className="mt-2 text-sm font-medium leading-snug">{a.title}</div>
-                <div className="mt-1 text-xs text-muted-foreground">{a.detail}</div>
+        <div className="space-y-4">
+          <Card className="shadow-elegant">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-warning" /> Threshold Alerts
+              </CardTitle>
+              <CardDescription>Rule-based signals from live metrics</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {thresholdAlerts.length === 0 ? (
+                <p className="text-sm text-muted-foreground">All metrics within normal thresholds.</p>
+              ) : (
+                thresholdAlerts.map((a, i) => (
+                  <div
+                    key={i}
+                    className="animate-fade-in-up rounded-xl border bg-card/50 p-3"
+                    style={{ animationDelay: `${i * 80}ms` }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={
+                          "h-2 w-2 rounded-full " +
+                          (a.level === "high" ? "bg-destructive animate-pulse-ring" : "bg-warning")
+                        }
+                      />
+                      <Badge variant="outline" className="text-[10px] uppercase">
+                        {a.level}
+                      </Badge>
+                    </div>
+                    <div className="mt-2 text-sm font-medium leading-snug">{a.title}</div>
+                    <div className="mt-1 text-xs text-muted-foreground">{a.detail}</div>
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-elegant">
+            <CardHeader className="flex flex-row items-start justify-between gap-3 space-y-0">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" /> AI Briefing
+                </CardTitle>
+                <CardDescription>
+                  {summary
+                    ? `Focus: ${summary.focusArea} • ${new Date(summary.generatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+                    : "One-paragraph summary of what matters right now"}
+                </CardDescription>
               </div>
-            ))}
-          </CardContent>
-        </Card>
+              <Button size="sm" variant="outline" onClick={generateSummary} disabled={summaryLoading}>
+                {summaryLoading ? (
+                  <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Sparkles className="mr-1 h-3.5 w-3.5" />
+                )}
+                {summaryLoading ? "Generating…" : summary ? "Refresh" : "Generate"}
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {summary ? (
+                <p className="text-sm leading-relaxed text-foreground/90">{summary.summary}</p>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Click generate for an AI-written ops brief based on current wait ({state.avgWaitTime} min),
+                  congestion ({state.congestionRisk}%), and department loads.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

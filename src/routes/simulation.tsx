@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
@@ -15,55 +16,92 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { Clock, Users, DoorOpen, TrendingUp, RotateCcw, Sparkles } from "lucide-react";
+import { Clock, Users, DoorOpen, TrendingUp, RotateCcw, Sparkles, Loader2 } from "lucide-react";
 import { computeMetrics, DEFAULT_CONTROLS } from "@/lib/simulation";
 import { KpiCard } from "@/components/kpi-card";
+import { useClinic } from "@/lib/clinic-context";
+import { fetchScenarioExplanation } from "@/lib/ai/functions";
+import type { AiExplainResponse } from "@/lib/clinic-types";
 
 export const Route = createFileRoute("/simulation")({
   head: () => ({
     meta: [
       { title: "What-If Simulation — ClinicFlow Intelligence" },
-      { name: "description", content: "Interactively test staffing, room, and scheduling changes and see instant AI predictions." },
+      {
+        name: "description",
+        content: "Test staffing and capacity changes, then get an AI explanation of the forecast.",
+      },
     ],
   }),
   component: SimPage,
 });
 
 function SimPage() {
-  const [arrivals, setArrivals] = useState(DEFAULT_CONTROLS.arrivalRate);
-  const [doctors, setDoctors] = useState(DEFAULT_CONTROLS.doctors);
-  const [rooms, setRooms] = useState(DEFAULT_CONTROLS.rooms);
-  const [apptDuration, setApptDuration] = useState(DEFAULT_CONTROLS.apptDuration);
-  const [nurses, setNurses] = useState(DEFAULT_CONTROLS.nurses);
-  const [overflow, setOverflow] = useState(false);
+  const { controls, setControls, resetControls, snapshot } = useClinic();
+  const [explaining, setExplaining] = useState(false);
+  const [explanation, setExplanation] = useState<AiExplainResponse | null>(null);
 
-  const controls = {
-    arrivalRate: arrivals,
-    doctors: doctors + (overflow ? 1 : 0),
-    rooms: rooms + (overflow ? 2 : 0),
-    apptDuration,
-    nurses,
+  const effective = {
+    arrivalRate: controls.arrivalRate,
+    doctors: controls.doctors + (controls.overflow ? 1 : 0),
+    rooms: controls.rooms + (controls.overflow ? 2 : 0),
+    apptDuration: controls.apptDuration,
+    nurses: controls.nurses,
   };
 
   const baseline = useMemo(() => computeMetrics(DEFAULT_CONTROLS), []);
-  const current = useMemo(() => computeMetrics(controls), [controls]);
+  const current = useMemo(() => computeMetrics(effective), [effective]);
 
   const projection = useMemo(() => {
     return Array.from({ length: 12 }, (_, i) => {
       const j = Math.sin(i * 0.5) * 0.6;
       const b = computeMetrics(DEFAULT_CONTROLS, j);
-      const c = computeMetrics(controls, j);
-      return { t: `+${i * 5}m`, baseline: b.avgWaitTime, optimized: c.avgWaitTime };
+      const c = computeMetrics(effective, j);
+      return { t: `+${i * 5}m`, baseline: b.avgWaitTime, scenario: c.avgWaitTime };
     });
-  }, [controls]);
+  }, [effective]);
 
   const reset = () => {
-    setArrivals(DEFAULT_CONTROLS.arrivalRate);
-    setDoctors(DEFAULT_CONTROLS.doctors);
-    setRooms(DEFAULT_CONTROLS.rooms);
-    setApptDuration(DEFAULT_CONTROLS.apptDuration);
-    setNurses(DEFAULT_CONTROLS.nurses);
-    setOverflow(false);
+    resetControls();
+    setExplanation(null);
+  };
+
+  const explain = async () => {
+    setExplaining(true);
+    try {
+      const response = await fetchScenarioExplanation({
+        data: {
+          snapshot,
+          baseline: {
+            avgWaitTime: baseline.avgWaitTime,
+            checkedIn: baseline.checkedIn,
+            activeAppointments: baseline.activeAppointments,
+            doctorsAvailable: baseline.doctorsAvailable,
+            doctorsTotal: baseline.doctorsTotal,
+            roomUtilization: baseline.roomUtilization,
+            congestionRisk: baseline.congestionRisk,
+            queueLength: baseline.queueLength,
+            estimatedDelay: baseline.estimatedDelay,
+          },
+          scenario: {
+            avgWaitTime: current.avgWaitTime,
+            checkedIn: current.checkedIn,
+            activeAppointments: current.activeAppointments,
+            doctorsAvailable: current.doctorsAvailable,
+            doctorsTotal: current.doctorsTotal,
+            roomUtilization: current.roomUtilization,
+            congestionRisk: current.congestionRisk,
+            queueLength: current.queueLength,
+            estimatedDelay: current.estimatedDelay,
+          },
+        },
+      });
+      setExplanation(response);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not explain forecast.");
+    } finally {
+      setExplaining(false);
+    }
   };
 
   return (
@@ -72,13 +110,11 @@ function SimPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">What-If Simulation</h1>
           <p className="text-sm text-muted-foreground">
-            Adjust Operations and Watch the AI Re-forecast in Real Time
+            Adjust controls and see the forecast update — then ask AI to explain your scenario
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Badge className="bg-gradient-primary text-primary-foreground shadow-glow">
-            <Sparkles className="mr-1 h-3 w-3" /> Live forecast
-          </Badge>
+          <Badge variant="outline">Scenario forecast</Badge>
           <Button variant="outline" size="sm" onClick={reset}>
             <RotateCcw className="mr-1 h-3.5 w-3.5" /> Reset
           </Button>
@@ -92,28 +128,107 @@ function SimPage() {
             <CardDescription>Drag Sliders to Test Scenarios</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <ControlSlider label="Patient Arrivals" unit="/ hour" value={arrivals} min={5} max={45} onChange={setArrivals} />
-            <ControlSlider label="Doctors on Shift" value={doctors} min={2} max={14} onChange={setDoctors} />
-            <ControlSlider label="Open Exam Rooms" value={rooms} min={4} max={18} onChange={setRooms} />
-            <ControlSlider label="Avg Appointment" unit="min" value={apptDuration} min={10} max={45} onChange={setApptDuration} />
-            <ControlSlider label="Nurses on Shift" value={nurses} min={3} max={16} onChange={setNurses} />
+            <ControlSlider
+              label="Patient Arrivals"
+              unit="/ hour"
+              value={controls.arrivalRate}
+              min={5}
+              max={45}
+              onChange={(v) => {
+                setControls({ arrivalRate: v });
+                setExplanation(null);
+              }}
+            />
+            <ControlSlider
+              label="Doctors on Shift"
+              value={controls.doctors}
+              min={2}
+              max={14}
+              onChange={(v) => {
+                setControls({ doctors: v });
+                setExplanation(null);
+              }}
+            />
+            <ControlSlider
+              label="Open Exam Rooms"
+              value={controls.rooms}
+              min={4}
+              max={18}
+              onChange={(v) => {
+                setControls({ rooms: v });
+                setExplanation(null);
+              }}
+            />
+            <ControlSlider
+              label="Avg Appointment"
+              unit="min"
+              value={controls.apptDuration}
+              min={10}
+              max={45}
+              onChange={(v) => {
+                setControls({ apptDuration: v });
+                setExplanation(null);
+              }}
+            />
+            <ControlSlider
+              label="Nurses on Shift"
+              value={controls.nurses}
+              min={3}
+              max={16}
+              onChange={(v) => {
+                setControls({ nurses: v });
+                setExplanation(null);
+              }}
+            />
 
             <div className="flex items-center justify-between rounded-xl border bg-card p-3">
               <div className="space-y-0.5">
                 <Label className="text-sm">Open Overflow Station</Label>
                 <p className="text-xs text-muted-foreground">+1 Doctor, +2 Rooms</p>
               </div>
-              <Switch checked={overflow} onCheckedChange={setOverflow} />
+              <Switch
+                checked={controls.overflow}
+                onCheckedChange={(overflow) => {
+                  setControls({ overflow });
+                  setExplanation(null);
+                }}
+              />
             </div>
           </CardContent>
         </Card>
 
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            <KpiCard label="Wait Time" value={current.avgWaitTime} unit="min" icon={<Clock className="h-5 w-5" />} accent={current.avgWaitTime < baseline.avgWaitTime ? "success" : "warning"} hint={`baseline ${baseline.avgWaitTime}m`} />
-            <KpiCard label="Congestion" value={current.congestionRisk} unit="%" icon={<TrendingUp className="h-5 w-5" />} accent={current.congestionRisk > 70 ? "destructive" : "teal"} hint={`baseline ${baseline.congestionRisk}%`} />
-            <KpiCard label="Queue" value={current.queueLength} icon={<Users className="h-5 w-5" />} accent="primary" hint={`baseline ${baseline.queueLength}`} />
-            <KpiCard label="Room Util." value={current.roomUtilization} unit="%" icon={<DoorOpen className="h-5 w-5" />} accent="teal" />
+            <KpiCard
+              label="Wait Time"
+              value={current.avgWaitTime}
+              unit="min"
+              icon={<Clock className="h-5 w-5" />}
+              accent={current.avgWaitTime < baseline.avgWaitTime ? "success" : "warning"}
+              hint={`baseline ${baseline.avgWaitTime}m`}
+            />
+            <KpiCard
+              label="Congestion"
+              value={current.congestionRisk}
+              unit="%"
+              icon={<TrendingUp className="h-5 w-5" />}
+              accent={current.congestionRisk > 70 ? "destructive" : "teal"}
+              hint={`baseline ${baseline.congestionRisk}%`}
+            />
+            <KpiCard
+              label="Queue"
+              value={current.queueLength}
+              icon={<Users className="h-5 w-5" />}
+              accent="primary"
+              hint={`baseline ${baseline.queueLength}`}
+            />
+            <KpiCard
+              label="Room Util."
+              value={current.roomUtilization}
+              unit="%"
+              icon={<DoorOpen className="h-5 w-5" />}
+              accent="teal"
+            />
           </div>
 
           <Card className="shadow-elegant">
@@ -129,7 +244,7 @@ function SimPage() {
                       <stop offset="0%" stopColor="var(--color-muted-foreground)" stopOpacity={0.35} />
                       <stop offset="100%" stopColor="var(--color-muted-foreground)" stopOpacity={0} />
                     </linearGradient>
-                    <linearGradient id="gOpt" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient id="gScenario" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={0.45} />
                       <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0} />
                     </linearGradient>
@@ -137,31 +252,47 @@ function SimPage() {
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
                   <XAxis dataKey="t" stroke="var(--color-muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
                   <YAxis stroke="var(--color-muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
-                  <Tooltip contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 12, fontSize: 12 }} />
+                  <Tooltip
+                    contentStyle={{
+                      background: "var(--color-popover)",
+                      border: "1px solid var(--color-border)",
+                      borderRadius: 12,
+                      fontSize: 12,
+                    }}
+                  />
                   <Area type="monotone" dataKey="baseline" stroke="var(--color-muted-foreground)" strokeWidth={2} fill="url(#gBaseline)" />
-                  <Area type="monotone" dataKey="optimized" stroke="var(--color-primary)" strokeWidth={2.5} fill="url(#gOpt)" />
+                  <Area type="monotone" dataKey="scenario" stroke="var(--color-primary)" strokeWidth={2.5} fill="url(#gScenario)" />
                 </AreaChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
 
           <Card className="shadow-elegant">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" /> AI commentary
-              </CardTitle>
+            <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" /> AI explanation
+                </CardTitle>
+                <CardDescription>Plain-language summary of your scenario vs. baseline</CardDescription>
+              </div>
+              <Button size="sm" variant="outline" onClick={explain} disabled={explaining}>
+                {explaining ? (
+                  <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Sparkles className="mr-1 h-3.5 w-3.5" />
+                )}
+                {explaining ? "Explaining…" : explanation ? "Regenerate" : "Explain forecast"}
+              </Button>
             </CardHeader>
             <CardContent>
-              <p className="text-sm leading-relaxed text-foreground/90">
-                With <b>{controls.doctors}</b> doctors covering <b>{controls.rooms}</b> rooms at <b>{controls.arrivalRate}</b> arrivals/hour
-                and <b>{controls.apptDuration}</b>-minute appointments, predicted average wait time is{" "}
-                <b className={current.avgWaitTime < baseline.avgWaitTime ? "text-success" : "text-warning"}>
-                  {current.avgWaitTime} min
-                </b>{" "}
-                ({current.avgWaitTime < baseline.avgWaitTime ? "↓" : "↑"} {Math.abs(current.avgWaitTime - baseline.avgWaitTime)} vs baseline)
-                and congestion risk is <b>{current.congestionRisk}%</b>.
-                {overflow && " Overflow capacity adds resilience for the next 60 minutes."}
-              </p>
+              {explanation ? (
+                <p className="text-sm leading-relaxed text-foreground/90">{explanation.explanation}</p>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Adjust the controls above, then click <b>Explain forecast</b> to get an AI-written comparison
+                  of baseline ({baseline.avgWaitTime} min wait) vs. your scenario ({current.avgWaitTime} min wait).
+                </p>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -171,13 +302,28 @@ function SimPage() {
 }
 
 function ControlSlider({
-  label, value, min, max, onChange, unit,
-}: { label: string; value: number; min: number; max: number; onChange: (v: number) => void; unit?: string }) {
+  label,
+  value,
+  min,
+  max,
+  onChange,
+  unit,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  onChange: (v: number) => void;
+  unit?: string;
+}) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <Label className="text-sm">{label}</Label>
-        <span className="text-sm font-medium tabular-nums">{value}{unit ? ` ${unit}` : ""}</span>
+        <span className="text-sm font-medium tabular-nums">
+          {value}
+          {unit ? ` ${unit}` : ""}
+        </span>
       </div>
       <Slider value={[value]} min={min} max={max} step={1} onValueChange={(v) => onChange(v[0])} />
     </div>

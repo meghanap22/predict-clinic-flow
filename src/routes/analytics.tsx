@@ -24,7 +24,7 @@ export const Route = createFileRoute("/analytics")({
   head: () => ({
     meta: [
       { title: "Analytics & Outcomes — ClinicFlow Intelligence" },
-      { name: "description", content: "Compare current clinic performance to AI-optimized workflow across throughput, wait time, and utilization." },
+      { name: "description", content: "Compare current clinic performance to projected optimized workflow across throughput, wait time, and utilization." },
     ],
   }),
   component: AnalyticsPage,
@@ -64,7 +64,7 @@ function AnalyticsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Analytics & Outcomes</h1>
-        <p className="text-sm text-muted-foreground">Before vs. After AI-driven Optimization</p>
+        <p className="text-sm text-muted-foreground">Before vs. After Projected Optimization</p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
@@ -80,7 +80,7 @@ function AnalyticsPage() {
         <Card className="shadow-elegant">
           <CardHeader>
             <CardTitle>Average Wait Time</CardTitle>
-            <CardDescription>Current Operations vs AI-Optimized (minutes)</CardDescription>
+            <CardDescription>Current Operations vs Projected Optimized (minutes)</CardDescription>
           </CardHeader>
           <CardContent className="h-72">
             <ResponsiveContainer width="100%" height="100%">
@@ -91,7 +91,7 @@ function AnalyticsPage() {
                 <Tooltip contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 12, fontSize: 12 }} />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
                 <Bar dataKey="current" name="Current" fill="var(--color-muted-foreground)" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="optimized" name="AI Optimized" fill="var(--color-primary)" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="optimized" name="Projected Optimized" fill="var(--color-primary)" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </CardContent>
@@ -111,7 +111,7 @@ function AnalyticsPage() {
                 <Tooltip contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 12, fontSize: 12 }} />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
                 <Line type="monotone" dataKey="current" name="Current" stroke="var(--color-muted-foreground)" strokeWidth={2} dot={{ r: 3 }} />
-                <Line type="monotone" dataKey="optimized" name="AI Optimized" stroke="var(--color-teal)" strokeWidth={2.5} dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="optimized" name="Projected Optimized" stroke="var(--color-teal)" strokeWidth={2.5} dot={{ r: 3 }} />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
@@ -131,7 +131,7 @@ function AnalyticsPage() {
                 <PolarAngleAxis dataKey="axis" tick={{ fontSize: 11, fill: "var(--color-muted-foreground)" }} />
                 <PolarRadiusAxis angle={30} domain={[0, 100]} tick={false} axisLine={false} />
                 <Radar name="Current" dataKey="current" stroke="var(--color-muted-foreground)" fill="var(--color-muted-foreground)" fillOpacity={0.2} />
-                <Radar name="AI Optimized" dataKey="optimized" stroke="var(--color-primary)" fill="var(--color-primary)" fillOpacity={0.35} />
+                <Radar name="Projected Optimized" dataKey="optimized" stroke="var(--color-primary)" fill="var(--color-primary)" fillOpacity={0.35} />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
                 <Tooltip contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 12, fontSize: 12 }} />
               </RadarChart>
