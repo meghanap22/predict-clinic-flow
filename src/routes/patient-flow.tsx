@@ -1,5 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect, useMemo } from "react";
+import { z } from "zod";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -10,6 +11,8 @@ import {
   Stethoscope,
   Users,
 } from "lucide-react";
+import { DoctorDaySheet, DoctorScheduleCard } from "@/components/doctor-day-sheet";
+import { DOCTOR_SCHEDULE } from "@/lib/doctor-schedule";
 import {
   Bar,
   BarChart,
@@ -23,7 +26,12 @@ import {
   YAxis,
 } from "recharts";
 
+const patientFlowSearchSchema = z.object({
+  doctor: z.string().optional(),
+});
+
 export const Route = createFileRoute("/patient-flow")({
+  validateSearch: patientFlowSearchSchema,
   head: () => ({
     meta: [
       { title: "Patient Flow — ClinicFlow Intelligence" },
@@ -65,6 +73,22 @@ export const stageColors = ["#5aa9ff", "#4dc6c0", "#5cd6a9", "#f5c46b", "#7da8ff
 
 function FlowPage() {
   const totalInClinic = useMemo(() => STAGES.reduce((a, s) => a + s.count, 0), []);
+  const { doctor: selectedDoctorId } = Route.useSearch();
+  const navigate = useNavigate({ from: Route.fullPath });
+
+  useEffect(() => {
+    if (!selectedDoctorId) return;
+    const el = document.getElementById(selectedDoctorId);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [selectedDoctorId]);
+
+  const openDoctor = (id: string) => {
+    navigate({ search: { doctor: id } });
+  };
+
+  const closeDoctor = () => {
+    navigate({ search: { doctor: undefined } });
+  };
 
   return (
     <div className="space-y-6">
@@ -160,36 +184,28 @@ function FlowPage() {
           </CardContent>
         </Card>
 
-        <Card className="flex h-full flex-col shadow-elegant">
+        <Card id="doctor-schedule" className="flex h-full scroll-mt-24 flex-col shadow-elegant">
           <CardHeader>
             <CardTitle>Doctor Schedule</CardTitle>
-            <CardDescription>Today's Session Load</CardDescription>
+            <CardDescription className="mt-1.5">Tap a doctor to view today&apos;s full schedule</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            {[
-              { name: "Dr. Alvarez", role: "Pediatrics", load: 92 },
-              { name: "Dr. Chen", role: "Cardiology", load: 71 },
-              { name: "Dr. Patel", role: "Urgent Care", load: 88 },
-              { name: "Dr. Okafor", role: "General", load: 54 },
-              { name: "Dr. Lindberg", role: "Radiology", load: 36 },
-            ].map((d) => (
-              <div key={d.name} className="rounded-xl border bg-card p-3">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-medium">{d.name}</div>
-                    <div className="text-xs text-muted-foreground">{d.role}</div>
-                  </div>
-                  <Badge variant={d.load > 85 ? "destructive" : d.load > 70 ? "outline" : "secondary"}>
-                    {d.load}%
-                  </Badge>
-                </div>
-                <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted">
-                  <div className="h-full rounded-full bg-gradient-primary" style={{ width: `${d.load}%` }} />
-                </div>
-              </div>
+            {DOCTOR_SCHEDULE.map((d) => (
+              <DoctorScheduleCard
+                key={d.id}
+                doctor={d}
+                highlighted={selectedDoctorId === d.id}
+                onSelect={() => openDoctor(d.id)}
+              />
             ))}
           </CardContent>
         </Card>
+
+        <DoctorDaySheet
+          doctorId={selectedDoctorId}
+          open={!!selectedDoctorId}
+          onOpenChange={(open) => !open && closeDoctor()}
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-stretch">

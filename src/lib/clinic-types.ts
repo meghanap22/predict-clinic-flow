@@ -26,6 +26,23 @@ export const departmentLoadSchema = z.object({
   load: z.number(),
 });
 
+export const scheduleSlotSchema = z.object({
+  start: z.string(),
+  end: z.string(),
+  title: z.string(),
+  type: z.enum(["appointment", "break", "admin", "block"]),
+  room: z.string().optional(),
+});
+
+export const doctorScheduleSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  department: z.string(),
+  sessionLoad: z.number(),
+  shift: z.string(),
+  todaySchedule: z.array(scheduleSlotSchema),
+});
+
 export const historyPointSchema = z.object({
   t: z.string(),
   wait: z.number(),
@@ -38,6 +55,7 @@ export const clinicSnapshotSchema = z.object({
   metrics: clinicMetricsSchema,
   controls: clinicControlsSchema,
   departments: z.array(departmentLoadSchema),
+  doctorSchedule: z.array(doctorScheduleSchema),
   trend: z.object({
     wait: z.enum(["rising", "falling", "stable"]),
     congestion: z.enum(["rising", "falling", "stable"]),
@@ -88,3 +106,22 @@ export const aiExplainResponseSchema = z.object({
 });
 
 export type AiExplainResponse = z.infer<typeof aiExplainResponseSchema>;
+
+export const chatMessageSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  content: z.string().min(1).max(4000),
+});
+
+export const chatRequestSchema = z.object({
+  snapshot: clinicSnapshotSchema,
+  page: z.string().max(120).optional(),
+  messages: z.array(chatMessageSchema).min(1).max(24),
+});
+
+export const chatResponseSchema = z.object({
+  reply: z.string(),
+});
+
+export type ChatMessage = z.infer<typeof chatMessageSchema>;
+export type ChatRequest = z.infer<typeof chatRequestSchema>;
+export type ChatResponse = z.infer<typeof chatResponseSchema>;

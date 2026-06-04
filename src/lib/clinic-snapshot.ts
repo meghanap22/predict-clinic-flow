@@ -1,5 +1,6 @@
 import type { ClinicControls, ClinicSnapshot } from "./clinic-types";
 import type { SimState } from "./simulation";
+import { DOCTOR_SCHEDULE } from "./doctor-schedule";
 import { DEPARTMENTS } from "./simulation";
 
 type HistoryPoint = ClinicSnapshot["recentHistory"][number];
@@ -33,6 +34,14 @@ export function buildClinicSnapshot(
     },
     controls,
     departments: DEPARTMENTS.map((d) => ({ name: d.name, load: d.load })),
+    doctorSchedule: DOCTOR_SCHEDULE.map((d) => ({
+      id: d.id,
+      name: d.name,
+      department: d.department,
+      sessionLoad: d.sessionLoad,
+      shift: d.shift,
+      todaySchedule: d.todaySchedule,
+    })),
     trend: {
       wait: trend(history.map((h) => h.wait)),
       congestion: trend(history.map((h) => h.congestion)),

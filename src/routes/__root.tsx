@@ -12,6 +12,7 @@ import appCss from "../styles.css?url";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { TopBar } from "@/components/top-bar";
+import { ClinicAssistant } from "@/components/clinic-assistant";
 import { Toaster } from "@/components/ui/sonner";
 import { ClinicProvider } from "@/lib/clinic-context";
 
@@ -91,6 +92,7 @@ function RootComponent() {
               </main>
             </div>
           </div>
+          <ClinicAssistant />
           <Toaster />
         </SidebarProvider>
       </ClinicProvider>

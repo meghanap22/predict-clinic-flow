@@ -2,17 +2,22 @@ import {
   aiExplainResponseSchema,
   aiRecommendationsResponseSchema,
   aiSummaryResponseSchema,
+  chatResponseSchema,
   type AiExplainResponse,
   type AiRecommendationsResponse,
   type AiSummaryResponse,
+  type ChatMessage,
+  type ChatResponse,
   type ClinicSnapshot,
   type ScenarioComparison,
 } from "@/lib/clinic-types";
 import {
+  callOpenRouter,
   callOpenRouterCached,
   parseJsonResponse,
 } from "@/lib/ai/openrouter.server";
 import {
+  chatAssistantPrompt,
   dashboardSummaryPrompt,
   explainScenarioPrompt,
   recommendationsPrompt,
@@ -59,4 +64,17 @@ export async function explainScenario(
 
   const parsed = withGeneratedAt(parseJsonResponse<AiExplainResponse>(raw));
   return aiExplainResponseSchema.parse(parsed);
+}
+
+export async function sendChatReply(
+  snapshot: ClinicSnapshot,
+  messages: ChatMessage[],
+  page?: string,
+): Promise<ChatResponse> {
+  const { system, user } = chatAssistantPrompt(snapshot, page, messages);
+  const reply = await callOpenRouter([
+    { role: "system", content: system },
+    { role: "user", content: user },
+  ]);
+  return chatResponseSchema.parse({ reply });
 }

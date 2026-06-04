@@ -1,12 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
-import {
-  clinicSnapshotSchema,
-  scenarioComparisonSchema,
-} from "@/lib/clinic-types";
+import { chatRequestSchema, clinicSnapshotSchema, scenarioComparisonSchema } from "@/lib/clinic-types";
 import {
   explainScenario,
   generateDashboardSummary,
   generateRecommendations,
+  sendChatReply,
 } from "@/lib/ai/service.server";
 
 export const fetchRecommendations = createServerFn({ method: "POST" })
@@ -20,3 +18,9 @@ export const fetchDashboardSummary = createServerFn({ method: "POST" })
 export const fetchScenarioExplanation = createServerFn({ method: "POST" })
   .inputValidator(scenarioComparisonSchema)
   .handler(async ({ data }) => explainScenario(data));
+
+export const fetchChatReply = createServerFn({ method: "POST" })
+  .inputValidator(chatRequestSchema)
+  .handler(async ({ data }) =>
+    sendChatReply(data.snapshot, data.messages, data.page),
+  );

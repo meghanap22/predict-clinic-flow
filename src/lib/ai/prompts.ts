@@ -1,4 +1,4 @@
-import type { ClinicSnapshot, ScenarioComparison } from "@/lib/clinic-types";
+import type { ChatMessage, ClinicSnapshot, ScenarioComparison } from "@/lib/clinic-types";
 
 const SYSTEM_PROMPT = `You are ClinicFlow Intelligence, an operations advisor for outpatient clinics.
 You analyze simulated clinic metrics and give concise, practical recommendations.
@@ -64,5 +64,46 @@ Return JSON:
 
 Comparison data:
 ${JSON.stringify(comparison, null, 2)}`,
+  };
+}
+
+const PAGE_LABELS: Record<string, string> = {
+  "/": "Operations Dashboard",
+  "/analytics": "Analytics & Outcomes",
+  "/patient-flow": "Patient Flow",
+  "/recommendations": "AI Recommendations",
+  "/simulation": "What-If Simulation",
+};
+
+export function chatAssistantPrompt(
+  snapshot: ClinicSnapshot,
+  page: string | undefined,
+  messages: ChatMessage[],
+) {
+  const pageLabel = page ? (PAGE_LABELS[page] ?? page) : "ClinicFlow";
+  const history = messages
+    .slice(0, -1)
+    .map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`)
+    .join("\n\n");
+
+  return {
+    system: `You are ClinicFlow Intelligence, a conversational operations assistant for outpatient clinic administrators.
+Rules:
+- Answer using ONLY the clinic snapshot JSON and conversation context below.
+- Never invent patient names, EMR records, or metrics not in the snapshot.
+- Be concise, practical, and friendly.
+- Do NOT use markdown (no **, no # headers, no backticks).
+- Format for easy reading: one short opening sentence, then one fact per line starting with "- " (hyphen only; the UI adds bullets).
+- Label then value in plain text, e.g. "- Urgent Care load: 91% — highest department pressure."
+- The snapshot includes doctorSchedule: each doctor has shift hours, sessionLoad %, and todaySchedule (timed blocks with type: appointment, break, admin, block).
+- Use todaySchedule when asked what a doctor is doing, their availability, or appointments; cite times and titles from the data.
+- Never say you lack doctor schedules when doctorSchedule is present.
+- If asked about something outside the snapshot, say what data you would need.
+- The user is currently viewing: ${pageLabel}.`,
+    user: `Clinic snapshot (live simulated metrics):
+${JSON.stringify(snapshot, null, 2)}
+
+${history ? `Prior conversation:\n${history}\n\n` : ""}User question:
+${messages[messages.length - 1]?.content ?? ""}`,
   };
 }
