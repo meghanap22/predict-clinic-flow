@@ -35,7 +35,7 @@ The platform consists of a healthcare operations dashboard that displays:
 * Room utilization
 * Congestion risk
 
-The dashboard analyzes these operational signals and generates AI-driven recommendations for clinic administrators. The current implementation uses simulated clinic data to demonstrate how predictive operational insights could be surfaced in a real-world healthcare environment.
+The dashboard I made analyzes these operational signals and generates AI-driven recommendations for clinic administrators. The current implementation uses simulated clinic data in order to show how predictive operational insights could be surfaced in a real-world healthcare environment.
 
 Key technical work completed:
 
@@ -49,7 +49,7 @@ Key technical work completed:
 
 ## Evaluation & Evidence
 
-Since access to real hospital operational datasets was outside the scope of this project, testing was performed using simulated clinic workflow data.
+Having access to real hospital operational datasets was outside the scope of this project, so instead, testing was performed using simulated clinic workflow data.
 
 Evaluation focused on:
 
@@ -82,7 +82,7 @@ By helping administrators anticipate bottlenecks rather than react to them, Clin
 
 ## Future Work
 
-If development continued, I would focus on:
+If development continued, I would make these additions and focus on:
 
 * Integrating real hospital operational data
 * Connecting with EHR and scheduling systems
