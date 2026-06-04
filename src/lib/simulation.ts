@@ -28,9 +28,20 @@ export const DEFAULT_CONTROLS = {
   nurses: 8,
 };
 
+const HISTORY_MINUTES = 30;
+const LIVE_TICK_MS = 4_000;
+const HISTORY_TICK_MS = 60_000;
+
+export type HistoryPoint = { t: string; wait: number; congestion: number; queue: number };
+
+function formatHistoryTime(date: Date) {
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
 export function computeMetrics(c: typeof DEFAULT_CONTROLS, jitter = 0): SimState {
   const load = (c.arrivalRate * c.apptDuration) / (c.doctors * 60);
-  const congestion = Math.min(100, Math.max(5, load * 80 + jitter * 8));
+  // Map capacity load to 0–100: ~0.6 stable, ~1.0 elevated, >1.1 critical (matches dashboard tiers)
+  const congestion = Math.min(100, Math.max(5, Math.round((load - 0.4) * 65 + 25 + jitter * 6)));
   const wait = Math.max(2, load * 55 + jitter * 4);
   const queue = Math.max(0, Math.round(c.arrivalRate * 0.4 * load + jitter));
   const util = Math.min(100, Math.max(30, (c.arrivalRate * c.apptDuration) / (c.rooms * 60) * 100 + jitter * 3));
@@ -48,39 +59,53 @@ export function computeMetrics(c: typeof DEFAULT_CONTROLS, jitter = 0): SimState
   };
 }
 
+function seedHistory(controls: typeof DEFAULT_CONTROLS, now = Date.now()): HistoryPoint[] {
+  const arr: HistoryPoint[] = [];
+  for (let i = HISTORY_MINUTES - 1; i >= 0; i--) {
+    const d = new Date(now - i * 60_000);
+    const j = Math.sin(i / 2) * 0.6 + Math.random() * 0.4;
+    const s = computeMetrics(controls, j);
+    arr.push({
+      t: formatHistoryTime(d),
+      wait: s.avgWaitTime,
+      congestion: s.congestionRisk,
+      queue: s.queueLength,
+    });
+  }
+  return arr;
+}
+
 export function useLiveSim(controls = DEFAULT_CONTROLS) {
   const [state, setState] = useState<SimState>(() => computeMetrics(controls));
-  const [history, setHistory] = useState<Array<{ t: string; wait: number; congestion: number; queue: number }>>(
-    () => {
-      const arr: any[] = [];
-      const now = Date.now();
-      for (let i = 19; i >= 0; i--) {
-        const d = new Date(now - i * 60_000);
-        const j = Math.sin(i / 2) * 0.6 + Math.random() * 0.4;
-        const s = computeMetrics(controls, j);
-        arr.push({
-          t: d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          wait: s.avgWaitTime,
-          congestion: s.congestionRisk,
-          queue: s.queueLength,
-        });
-      }
-      return arr;
-    },
-  );
+  const [history, setHistory] = useState<HistoryPoint[]>(() => seedHistory(controls));
 
   useEffect(() => {
     setState(computeMetrics(controls));
-    const id = setInterval(() => {
+    setHistory(seedHistory(controls));
+
+    const liveId = setInterval(() => {
+      const j = (Math.random() - 0.4) * 2;
+      setState(computeMetrics(controls, j));
+    }, LIVE_TICK_MS);
+
+    const historyId = setInterval(() => {
       const j = (Math.random() - 0.4) * 2;
       const next = computeMetrics(controls, j);
-      setState(next);
-      setHistory((h) => {
-        const t = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-        return [...h.slice(-29), { t, wait: next.avgWaitTime, congestion: next.congestionRisk, queue: next.queueLength }];
-      });
-    }, 4000);
-    return () => clearInterval(id);
+      setHistory((h) => [
+        ...h.slice(-(HISTORY_MINUTES - 1)),
+        {
+          t: formatHistoryTime(new Date()),
+          wait: next.avgWaitTime,
+          congestion: next.congestionRisk,
+          queue: next.queueLength,
+        },
+      ]);
+    }, HISTORY_TICK_MS);
+
+    return () => {
+      clearInterval(liveId);
+      clearInterval(historyId);
+    };
   }, [controls.arrivalRate, controls.doctors, controls.rooms, controls.apptDuration, controls.nurses]);
 
   return { state, history };

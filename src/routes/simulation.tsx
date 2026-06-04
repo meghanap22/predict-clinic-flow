@@ -123,83 +123,87 @@ function SimPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[420px_1fr]">
-        <Card className="shadow-elegant">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[420px_1fr] lg:items-stretch">
+        <Card className="flex h-full flex-col shadow-elegant">
           <CardHeader>
             <CardTitle>Operational Controls</CardTitle>
             <CardDescription>Drag Sliders to Test Scenarios</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-6">
-            <ControlSlider
-              label="Patient Arrivals"
-              unit="/ hour"
-              value={controls.arrivalRate}
-              min={5}
-              max={45}
-              onChange={(v) => {
-                setControls({ arrivalRate: v });
-                setExplanation(null);
-              }}
-            />
-            <ControlSlider
-              label="Doctors on Shift"
-              value={controls.doctors}
-              min={2}
-              max={14}
-              onChange={(v) => {
-                setControls({ doctors: v });
-                setExplanation(null);
-              }}
-            />
-            <ControlSlider
-              label="Open Exam Rooms"
-              value={controls.rooms}
-              min={4}
-              max={18}
-              onChange={(v) => {
-                setControls({ rooms: v });
-                setExplanation(null);
-              }}
-            />
-            <ControlSlider
-              label="Avg Appointment"
-              unit="min"
-              value={controls.apptDuration}
-              min={10}
-              max={45}
-              onChange={(v) => {
-                setControls({ apptDuration: v });
-                setExplanation(null);
-              }}
-            />
-            <ControlSlider
-              label="Nurses on Shift"
-              value={controls.nurses}
-              min={3}
-              max={16}
-              onChange={(v) => {
-                setControls({ nurses: v });
-                setExplanation(null);
-              }}
-            />
-
-            <div className="flex items-center justify-between rounded-xl border bg-card p-3">
-              <div className="space-y-0.5">
-                <Label className="text-sm">Open Overflow Station</Label>
-                <p className="text-xs text-muted-foreground">+1 Doctor, +2 Rooms</p>
-              </div>
-              <Switch
-                checked={controls.overflow}
-                onCheckedChange={(overflow) => {
-                  setControls({ overflow });
+          <CardContent className="flex flex-1 flex-col">
+            <div className="grid min-h-0 flex-1 auto-rows-fr grid-rows-6 gap-3">
+              <ControlSlider
+                label="Patient Arrivals"
+                unit="/ hour"
+                value={controls.arrivalRate}
+                min={5}
+                max={45}
+                onChange={(v) => {
+                  setControls({ arrivalRate: v });
                   setExplanation(null);
                 }}
               />
+              <ControlSlider
+                label="Doctors on Shift"
+                value={controls.doctors}
+                min={2}
+                max={14}
+                onChange={(v) => {
+                  setControls({ doctors: v });
+                  setExplanation(null);
+                }}
+              />
+              <ControlSlider
+                label="Open Exam Rooms"
+                value={controls.rooms}
+                min={4}
+                max={18}
+                onChange={(v) => {
+                  setControls({ rooms: v });
+                  setExplanation(null);
+                }}
+              />
+              <ControlSlider
+                label="Avg Appointment"
+                unit="min"
+                value={controls.apptDuration}
+                min={10}
+                max={45}
+                onChange={(v) => {
+                  setControls({ apptDuration: v });
+                  setExplanation(null);
+                }}
+              />
+              <ControlSlider
+                label="Nurses on Shift"
+                value={controls.nurses}
+                min={3}
+                max={16}
+                onChange={(v) => {
+                  setControls({ nurses: v });
+                  setExplanation(null);
+                }}
+              />
+
+              <div className="flex min-h-0 flex-col justify-center">
+                <div className="flex items-center justify-between rounded-xl border bg-card p-3">
+                  <div className="space-y-0.5">
+                    <Label className="text-sm">Open Overflow Station</Label>
+                    <p className="text-xs text-muted-foreground">+1 Doctor, +2 Rooms</p>
+                  </div>
+                  <Switch
+                    checked={controls.overflow}
+                    onCheckedChange={(overflow) => {
+                      setControls({ overflow });
+                      setExplanation(null);
+                    }}
+                  />
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <div className="space-y-4">
+        <div className="flex h-full flex-col gap-4">
           <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
             <KpiCard
               label="Wait Time"
@@ -321,7 +325,7 @@ function ControlSlider({
   unit?: string;
 }) {
   return (
-    <div className="space-y-2">
+    <div className="flex h-full min-h-0 flex-col justify-center gap-2">
       <div className="flex items-center justify-between">
         <Label className="text-sm">{label}</Label>
         <span className="text-sm font-medium tabular-nums">

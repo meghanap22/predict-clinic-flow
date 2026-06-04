@@ -168,7 +168,9 @@ function DashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>Wait Time & Congestion (Live)</CardTitle>
-                <CardDescription>Streaming Operational Signal — Last 30 minutes</CardDescription>
+                <CardDescription className="mt-1.5">
+                  Streaming Operational Signal — Last 30 minutes
+                </CardDescription>
               </div>
             </div>
           </CardHeader>
@@ -186,7 +188,15 @@ function DashboardPage() {
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
-                <XAxis dataKey="t" stroke="var(--color-muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
+                <XAxis
+                  dataKey="t"
+                  stroke="var(--color-muted-foreground)"
+                  fontSize={11}
+                  tickLine={false}
+                  axisLine={false}
+                  interval="preserveStartEnd"
+                  minTickGap={28}
+                />
                 <YAxis stroke="var(--color-muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
                 <Tooltip
                   contentStyle={{
@@ -206,7 +216,7 @@ function DashboardPage() {
         <Card className="shadow-elegant">
           <CardHeader>
             <CardTitle>Predicted Congestion</CardTitle>
-            <CardDescription>Next 30 minutes • Clinic-Wide</CardDescription>
+            <CardDescription className="mt-1.5">Next 30 minutes • Clinic-Wide</CardDescription>
           </CardHeader>
           <CardContent className="h-72">
             <div className="flex h-full gap-3">
@@ -271,26 +281,28 @@ function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2 shadow-elegant">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:items-stretch">
+        <Card className="flex h-full flex-col shadow-elegant lg:col-span-2">
           <CardHeader>
             <CardTitle>Department Load</CardTitle>
             <CardDescription>Capacity Pressure by Department</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {DEPARTMENTS.map((d) => (
-              <div key={d.name} className="space-y-1.5">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-medium">{d.name}</span>
-                  <span className="tabular-nums text-muted-foreground">{d.load}%</span>
+          <CardContent className="flex flex-1 flex-col">
+            <div className="grid min-h-0 flex-1 auto-rows-fr grid-rows-5 gap-3">
+              {DEPARTMENTS.map((d) => (
+                <div key={d.name} className="flex min-h-0 flex-col justify-center gap-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium">{d.name}</span>
+                    <span className="tabular-nums text-muted-foreground">{d.load}%</span>
+                  </div>
+                  <Progress value={d.load} className="h-3" />
                 </div>
-                <Progress value={d.load} className="h-2" />
-              </div>
-            ))}
+              ))}
+            </div>
           </CardContent>
         </Card>
 
-        <div className="space-y-4">
+        <div className="flex h-full flex-col gap-4">
           <Card className="shadow-elegant">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
