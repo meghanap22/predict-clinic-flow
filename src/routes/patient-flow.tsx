@@ -192,55 +192,66 @@ function FlowPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Card className="shadow-elegant">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-stretch">
+        <Card className="flex h-full flex-col shadow-elegant">
           <CardHeader>
             <CardTitle>Queue Build-Up</CardTitle>
             <CardDescription>Delays Compounding through the Day</CardDescription>
           </CardHeader>
-          <CardContent className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={QUEUE_BUILD} margin={{ top: 10, right: 12, left: -10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
-                <XAxis dataKey="t" stroke="var(--color-muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
-                <YAxis stroke="var(--color-muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 12, fontSize: 12 }} />
-                <Line type="monotone" dataKey="queue" stroke="var(--color-primary)" strokeWidth={2.5} dot={{ r: 3 }} />
-              </LineChart>
-            </ResponsiveContainer>
+          <CardContent className="flex min-h-64 flex-1 flex-col">
+            <div className="min-h-0 flex-1">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={QUEUE_BUILD} margin={{ top: 10, right: 12, left: -10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" vertical={false} />
+                  <XAxis dataKey="t" stroke="var(--color-muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
+                  <YAxis stroke="var(--color-muted-foreground)" fontSize={11} tickLine={false} axisLine={false} />
+                  <Tooltip contentStyle={{ background: "var(--color-popover)", border: "1px solid var(--color-border)", borderRadius: 12, fontSize: 12 }} />
+                  <Line type="monotone" dataKey="queue" stroke="var(--color-primary)" strokeWidth={2.5} dot={{ r: 3 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="shadow-elegant">
+        <Card className="flex h-full flex-col shadow-elegant">
           <CardHeader>
             <CardTitle>Congestion Heatmap</CardTitle>
             <CardDescription>Department × Hour Intensity</CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-1">
-              <div className="grid grid-cols-[64px_repeat(9,minmax(0,1fr))] gap-1 text-[10px] text-muted-foreground">
-                <div></div>
-                {HEAT.map((h) => <div key={h.hour} className="text-center">{h.hour}</div>)}
+          <CardContent className="flex min-h-64 flex-1 flex-col">
+            <div className="flex min-h-0 flex-1 flex-col gap-1.5">
+              <div className="grid shrink-0 grid-cols-[64px_repeat(9,minmax(0,1fr))] gap-1.5 text-[10px] text-muted-foreground">
+                <div />
+                {HEAT.map((h) => (
+                  <div key={h.hour} className="text-center">
+                    {h.hour}
+                  </div>
+                ))}
               </div>
-              {["Peds", "Cardio", "Urgent", "Gen", "Rad"].map((dept, di) => (
-                <div key={dept} className="grid grid-cols-[64px_repeat(9,minmax(0,1fr))] gap-1">
-                  <div className="text-xs text-muted-foreground">{dept}</div>
-                  {HEAT.map((h) => {
-                    const v = h.values[di].v;
-                    const intensity = v / 100;
-                    return (
-                      <div
-                        key={h.hour}
-                        className="h-7 rounded-md transition hover:scale-110"
-                        style={{
-                          background: `color-mix(in oklab, var(--color-primary) ${Math.round(intensity * 95)}%, transparent)`,
-                        }}
-                        title={`${dept} ${h.hour}:00 • ${v}%`}
-                      />
-                    );
-                  })}
-                </div>
-              ))}
+              <div className="grid min-h-0 flex-1 auto-rows-fr grid-rows-5 gap-1.5">
+                {["Peds", "Cardio", "Urgent", "Gen", "Rad"].map((dept, di) => (
+                  <div
+                    key={dept}
+                    className="grid h-full min-h-0 grid-cols-[64px_repeat(9,minmax(0,1fr))] items-stretch gap-1.5"
+                  >
+                    <div className="flex items-center text-xs text-muted-foreground">{dept}</div>
+                    {HEAT.map((h) => {
+                      const v = h.values[di].v;
+                      const intensity = v / 100;
+                      return (
+                        <div
+                          key={h.hour}
+                          className="h-full min-h-0 rounded-md transition hover:scale-[1.02]"
+                          style={{
+                            background: `color-mix(in oklab, var(--color-primary) ${Math.round(intensity * 95)}%, transparent)`,
+                          }}
+                          title={`${dept} ${h.hour}:00 • ${v}%`}
+                        />
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
             </div>
           </CardContent>
         </Card>
