@@ -24,24 +24,24 @@ import { Link } from "@tanstack/react-router";
 
 const PAGE_PROMPTS: Record<string, string[]> = {
   "/": [
-    "What should I focus on right now?",
-    "Why is congestion at this level?",
+    "What should I Focus on Right Now?",
+    "Why is Congestion at this Level?",
   ],
   "/simulation": [
-    "How can I reduce wait time with these controls?",
-    "Explain my scenario vs baseline.",
+    "How can I Reduce Wait Time with these Controls?",
+    "Explain my Scenario vs Baseline.",
   ],
   "/recommendations": [
-    "What staffing change would help most?",
-    "Which department is under the most pressure?",
+    "What Staffing Change would Help Most?",
+    "Which Department is Under the Most Pressure?",
   ],
   "/patient-flow": [
-    "Summarize each doctor's session load.",
-    "Which doctor is under the most pressure?",
+    "Summarize each Doctor's Session Load.",
+    "Which Doctor is Under the Most Pressure?",
   ],
   "/analytics": [
-    "Summarize today's operational trends.",
-    "What metrics look concerning?",
+    "Summarize Today's Operational Trends.",
+    "What Metrics Look Concerning?",
   ],
 };
 
@@ -118,7 +118,7 @@ export function ClinicAssistant() {
             Clinic Assistant
           </SheetTitle>
           <SheetDescription className="mt-1.5">
-            Ask about live wait times, congestion, staffing, and your current page.
+            Ask about Live Wait Times, Congestion, Staffing, and your Current Page.
           </SheetDescription>
         </SheetHeader>
 
@@ -135,7 +135,7 @@ export function ClinicAssistant() {
                   onClick={() => setOpen(false)}
                   className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary transition-colors hover:bg-primary/10"
                 >
-                  Open doctor schedules
+                  Open Doctor Schedules
                 </Link>
                 <div className="flex flex-wrap gap-2">
                   {suggestions.map((prompt) => (
