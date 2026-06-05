@@ -4,6 +4,8 @@
 
 **Project Title:** ClinicFlow Intelligence
 
+**Project Video Link:** https://drive.google.com/file/d/1R4YOsAD5kHzyvQ4zPzQPi6f4ymUmzOa-/view?usp=sharing
+
 **Project Track:** Domain-Specific Idea (Healthcare Operations)
 
 ClinicFlow Intelligence is an AI-powered healthcare operations dashboard that was designed to help clinics monitor patient flow, staffing availability, room utilization, and wait times. This platform is able to analyze operational metrics and uses AI to generate recommendations in order to identify potential bottlenecks before they occurs. With this, the platform's main goal is to guide clinics to make more proactive decisions.
